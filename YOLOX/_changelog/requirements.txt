@@ -1,0 +1,17 @@
+# TODO: Update with exact module version
+numpy
+torch==1.13.1
+opencv_python
+loguru
+scikit-image
+tqdm
+torchvision==0.14.1
+Pillow
+thop
+ninja
+tabulate
+tensorboard
+
+# verified versions
+onnx==1.14.1
+onnxruntime==1.16.1
