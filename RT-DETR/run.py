@@ -105,7 +105,12 @@ while cap.isOpened():
     # Save the captured image with a timestamp (optional)
     # timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
     # filename = f"images/webcam_image_{timestamp}.jpg"
+    start_time = time.time()
     inference(frame, output_folder, model_checkpoint, thrh=0.5, img_size=[640, 640], plot=False)
+    end_time = time.time()
+    secs = end_time - start_time
+    fps = secs / 1
+    print(f"{fps} FPS | {secs*1000}ms per image")
     # to-do: look into results to get bounding box coordinates
     
     # save original image
