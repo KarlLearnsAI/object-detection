@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import cv2
+import time
 
 label_dict = {"id":0,"name":"person","supercategory":"none"},{"id":1,"name":"trolley","supercategory":"grocery"}
 
@@ -28,7 +29,7 @@ def inference(source, output_folder, model_checkpoint, thrh=0.35, img_size=[640,
                 # single folder
                 inference_folder(source, output_folder, model_checkpoint, thrh, img_size, plot)
     else:
-        raise TypeError("Invalid source type. Expected folder-/imagepath or list of folder-/imagepaths.")
+        inference_image(source, output_folder, model_checkpoint, thrh, img_size, plot)
 
 
 def inference_folder(input_folder, output_folder, model_checkpoint, thrh = 0.35, img_size=[640, 640], plot=False):
@@ -46,7 +47,11 @@ def inference_folder(input_folder, output_folder, model_checkpoint, thrh = 0.35,
 def inference_image(img_path, output_folder, model_checkpoint, thrh = 0.35, img_size=[640, 640], plot=False):
     os.makedirs(output_folder, exist_ok=True)
     size = torch.tensor([img_size])
-    im = Image.open(img_path).convert('RGB')
+    if isinstance(img_path, str):
+        im = Image.open(img_path).convert('RGB')
+    else:
+        im = Image.fromarray(img_path).convert('RGB')
+    # im = np.resize(im, (img_size[0], img_size[1], 3))
     im = im.resize((img_size[0], img_size[1]))
     im_data = ToTensor()(im)[None]
 
@@ -58,7 +63,7 @@ def inference_image(img_path, output_folder, model_checkpoint, thrh = 0.35, img_
     )
     labels, boxes, scores = output
     draw = ImageDraw.Draw(im)
-
+    print(boxes[:5])
     for i in range(im_data.shape[0]):
         scr = scores[i]
         lab = labels[i][scr > thrh]
@@ -75,20 +80,16 @@ def inference_image(img_path, output_folder, model_checkpoint, thrh = 0.35, img_
     if plot:
         plt.imshow(im)
         plt.show()
-    print(f"Inference on image finished, saved in: {os.path.join(output_folder, os.path.basename(img_path))}")
-    im.save(os.path.join(output_folder, os.path.basename(img_path)))
+    # print(f"Inference on image finished, saved in: {os.path.join(output_folder, os.path.basename(img_path))}")
+    # im.save(os.path.join(output_folder, os.path.basename(img_path)))
+    im.save(os.path.join(output_folder, f"test{np.random.randint(1,999)}.png"))
 
 
-
-img_path = "/Users/johannes/Code/Work/Data_cleaned/jacket_176_1/176_1_29.png"
-input_folder = "/Users/johannes/Code/Work/Test_Data"
-# input_folder = "/Users/johannes/Code/Work/Exports/Random_Test"
-# input_folder = '/Users/johannes/Code/Work/Exports/Out-of-sample-Test'
-output_folder = "/Users/johannes/Code/YOLO/RT-DETR/inference_output"
+output_folder = "/Users/johannes/Code/object-detection/RT-DETR/inference_output"
 # model_checkpoint = '/Users/johannes/Code/YOLO/RT-DETR/RT-DETR/rtdetr_pytorch/model.onnx'
 # model_checkpoint = '/Users/johannes/Code/YOLO/RT-DETR/RT-DETR/rtdetr_pytorch/train_01_epoch_30.onnx' # rv18
 # model_checkpoint = '/Users/johannes/Code/YOLO/RT-DETR/RT-DETR/rtdetr_pytorch/rv50-1-ep55.onnx' # rv50-ep55-1
-model_checkpoint = '/Users/johannes/Code/YOLO/RT-DETR/RT-DETR/rtdetr_pytorch/rv50-2-ep19.onnx' # rv50-2
+model_checkpoint = '/Users/johannes/Code/YOLO/RT-DETR/RT-DETR/rtdetr_pytorch/rv50-2-full-ep02.onnx' # rv50-2
 
 cap = cv2.VideoCapture(0)
 counter = 0
@@ -112,7 +113,8 @@ while cap.isOpened():
         # print(f"Image saved successfully as: {filename}")
     # time.sleep(1)
     counter += 1
-    if counter >= 0:
+    time.sleep(1)
+    if counter >= 5:
         break
 
 # Release the webcam capture
